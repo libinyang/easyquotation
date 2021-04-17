@@ -14,14 +14,6 @@ class BaseQuotation(metaclass=abc.ABCMeta):
 
     max_num = 800  # 每次请求的最大股票数
 
-    @property
-    @abc.abstractmethod
-    def stock_api(self) -> str:
-        """
-        行情 api 地址
-        """
-        pass
-
     def __init__(self):
         self._session = requests.session()
         stock_codes = self.load_stock_codes()
@@ -55,7 +47,7 @@ class BaseQuotation(metaclass=abc.ABCMeta):
     @property
     def all(self):
         warnings.warn("use market_snapshot instead", DeprecationWarning)
-        return self.get_stock_data(self.stock_list)
+        return self.get_stock_data(self.stock_list, prefix=False)
 
     @property
     def all_market(self):
@@ -98,22 +90,29 @@ class BaseQuotation(metaclass=abc.ABCMeta):
             ),
         }
 
-        r = self._session.get(self.stock_api + params, headers=headers)
+        r = self._session.get(params, headers=headers)
         return r.text
 
-    def get_stock_data(self, stock_list, **kwargs):
+    def get_stock_data(self, stock_list, prefix, mode=helpers.MOD_RT):
         """获取并格式化股票信息"""
-        res = self._fetch_stock_data(stock_list)
-        return self.format_response_data(res, **kwargs)
+        urls = self.get_urls(stock_list, mode)
+        res = self._fetch_stock_data(urls)
+        return self.format_response_data(res, prefix, mode)
 
-    def _fetch_stock_data(self, stock_list):
+    def _fetch_stock_data(self, urls):
         """获取股票信息"""
-        pool = multiprocessing.pool.ThreadPool(len(stock_list))
+        pool = multiprocessing.pool.ThreadPool(len(urls))
         try:
-            res = pool.map(self.get_stocks_by_range, stock_list)
+            res = pool.map(self.get_stocks_by_range, urls)
         finally:
             pool.close()
         return [d for d in res if d is not None]
 
-    def format_response_data(self, rep_data, **kwargs):
+    def format_response_data(self, rep_data, prefix, mode):
+        pass
+
+    def format_rt_response_data(self, rep_data, prefix, mode):
+        pass
+
+    def get_urls(self, stock_list, mode):
         pass

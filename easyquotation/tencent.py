@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from typing import Optional
 
-from . import basequotation
+from . import basequotation, helpers
 
 
 class Tencent(basequotation.BaseQuotation):
@@ -12,11 +12,17 @@ class Tencent(basequotation.BaseQuotation):
     grep_stock_code = re.compile(r"(?<=_)\w+")
     max_num = 60
 
-    @property
-    def stock_api(self) -> str:
-        return "http://qt.gtimg.cn/q="
+    def get_urls(self, stock_list, mode=helpers.MOD_RT):
+        if mode is helpers.MOD_RT:
+            return [
+                "http://qt.gtimg.cn/q=" + code for code in stock_list
+            ]
 
-    def format_response_data(self, rep_data, prefix=False):
+    def format_response_data(self, rep_data, prefix=False, mode=helpers.MOD_RT):
+        if mode is helpers.MOD_RT:
+            return self.format_rt_response_data(rep_data, prefix, mode)
+
+    def format_rt_response_data(self, rep_data, prefix=False, mode=helpers.MOD_RT):
         stocks_detail = "".join(rep_data)
         stock_details = stocks_detail.split(";")
         stock_dict = dict()

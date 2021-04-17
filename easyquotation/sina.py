@@ -2,7 +2,7 @@
 import re
 import time
 
-from . import basequotation
+from . import basequotation, helpers
 
 
 class Sina(basequotation.BaseQuotation):
@@ -21,11 +21,21 @@ class Sina(basequotation.BaseQuotation):
         r"(\w{2}\d+)=\"\";"
     )
 
-    @property
-    def stock_api(self) -> str:
-        return f"http://hq.sinajs.cn/rn={int(time.time() * 1000)}&list="
+    def get_urls(self, stock_list, mode=helpers.MOD_RT):
+        if mode is helpers.MOD_RT:
+            return [
+                f"http://hq.sinajs.cn/rn={int(time.time() * 1000)}&list=" + code for code in stock_list
+            ]
+        else:
+            return None
 
-    def format_response_data(self, rep_data, prefix=False):
+    def format_response_data(self, rep_data, prefix=False, mode=helpers.MOD_RT):
+        if mode is helpers.MOD_RT:
+            return self.format_rt_response_data(rep_data, prefix, mode)
+        else:
+            return None
+
+    def format_rt_response_data(self, rep_data, prefix=False, mode=helpers.MOD_RT):
         stocks_detail = "".join(rep_data)
         stocks_detail = self.del_null_data_stock.sub('', stocks_detail)
         stocks_detail = stocks_detail.replace(' ', '')

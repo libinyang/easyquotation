@@ -6,6 +6,11 @@ import requests
 
 STOCK_CODE_PATH = os.path.join(os.path.dirname(__file__), "stock_codes.conf")
 
+MOD_RT = 0 # real time data
+MOD_HISTORY = 1 # history data daykline
+MOD_BALANCESHEET = 2 # balance sheet data
+MOD_PROFIT = 3 # profit data
+MOD_CASH = 4 # cash flow data
 
 def update_stock_codes():
     """获取所有股票 ID 到 all_stock_code 目录下"""
