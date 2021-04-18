@@ -3,6 +3,7 @@ import abc
 import json
 import multiprocessing.pool
 import warnings
+import datetime
 
 import requests
 
@@ -13,6 +14,28 @@ class BaseQuotation(metaclass=abc.ABCMeta):
     """行情获取基类"""
 
     max_num = 800  # 每次请求的最大股票数
+
+    curr_time=datetime.datetime.now()
+    time_str=curr_time.strftime("%Y%m%d")
+    start_date = "20200101"
+    end_date = time_str
+
+    # start, end is the date of duration
+    # the format is like 20210414
+    def set_history_date(self, start, end):
+        #todo: check start and end format is valid or not
+        self.start_date = str(start)
+        self.end_date = str(end)
+
+    def get_history_date(self):
+        print(self.start_date)
+        print(self.end_date)
+
+    def get_start_date(self):
+        return self.start_date
+
+    def get_end_date(self):
+        return self.end_date
 
     def __init__(self):
         self._session = requests.session()
@@ -80,6 +103,17 @@ class BaseQuotation(metaclass=abc.ABCMeta):
         """
         return self.get_stock_data(self.stock_list, prefix=prefix)
 
+    def get_stocks_history(self, stock_code, prefix=False):
+        if not isinstance(stock_code, list):
+            stock_code = [stock_code]
+
+        if len(stock_code) > 1:
+            print ("it only supports fetch stock history data one by one, don't input multiple stock codes")
+            return -1
+        stock_list = self.gen_stock_list(stock_code)
+
+        return self.get_stock_data(stock_list, prefix=prefix, mode=helpers.MOD_HISTORY)
+
     def get_stocks_by_range(self, params):
         headers = {
             "Accept-Encoding": "gzip, deflate, sdch",
@@ -96,6 +130,9 @@ class BaseQuotation(metaclass=abc.ABCMeta):
     def get_stock_data(self, stock_list, prefix, mode=helpers.MOD_RT):
         """获取并格式化股票信息"""
         urls = self.get_urls(stock_list, mode)
+        if urls is None:
+            print ("URLs is none, please check if stock code is correct or if site supports the mode")
+            return
         res = self._fetch_stock_data(urls)
         return self.format_response_data(res, prefix, mode)
 
