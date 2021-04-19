@@ -43,7 +43,7 @@ class BaseQuotation(metaclass=abc.ABCMeta):
         self.stock_list = self.gen_stock_list(stock_codes)
 
     def gen_stock_list(self, stock_codes):
-        stock_with_exchange_list = self._gen_stock_prefix(stock_codes)
+        stock_with_exchange_list = self.gen_stock_prefix(stock_codes)
 
         if self.max_num > len(stock_with_exchange_list):
             request_list = ",".join(stock_with_exchange_list)
@@ -57,7 +57,7 @@ class BaseQuotation(metaclass=abc.ABCMeta):
             stock_list.append(request_list)
         return stock_list
 
-    def _gen_stock_prefix(self, stock_codes):
+    def gen_stock_prefix(self, stock_codes):
         return [
             helpers.get_stock_type(code) + code[-6:] for code in stock_codes
         ]
